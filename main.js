@@ -141,7 +141,6 @@ const fileToMime = {
 }
  
 const optionsEntries = {
-  "autofill-captcha": ["checkbox", "Autofill text captcha when in use (recommended, only disable if causing issues)", true],
   "bypass-filter": ["checkbox", "Try to bypass word filter when posting", true],
   "partysover": ["checkbox", "Disable Party Hats", true],
   "bannerhide": ["checkbox", "Disable the Banner", false],
@@ -449,63 +448,6 @@ if ((textarea = document.querySelector("textarea[name=body]")) && document.docum
   textarea.focus({
     preventScroll: true
   });
-}
- 
-// automatically load text captcha
-if (script = document.querySelector("td > script")) {
-  console.log("Loading captcha...");
-  let variables = Array.from(script.textContent.matchAll(/(?<=")[^",]*(?=")/g), m => m[0]);
-  actually_load_captcha(variables[0], variables[1]);
-}
- 
-// text captcha solver
-function solveCaptcha() {
-  let bodyColour = window.getComputedStyle(document.body).getPropertyValue("color");
-  let captcha = document.querySelector(".captcha_html > div");
-  let captchaBox = captcha.getBoundingClientRect();
-  let rotationDict = {
-    "ɐ": "a",
-    "ə": "e",
-    "b": "q",
-    "d": "p",
-    "n": "u",
-    "p": "d",
-    "q": "b",
-    "u": "n",
-    6: 9,
-    9: 6,
-  };
-  let chars = [];
-  document.querySelectorAll(".captcha_html div").forEach(e => {
-    let charBox = e.getBoundingClientRect();
-    let charStyle = window.getComputedStyle(e);
-    if (e.innerText.length == 1 &&
-        charBox.left > captchaBox.left - 5 &&
-        charBox.right < captchaBox.right + 5 &&
-        charBox.top > captchaBox.top - 5 &&
-        charBox.bottom < captchaBox.bottom + 5 &&
-        parseInt(charStyle.getPropertyValue("font-size")) > 15 &&
-        parseInt(charStyle.getPropertyValue("height")) > 5 &&
-        charStyle.getPropertyValue("overflow") != "hidden" &&
-        charStyle.getPropertyValue("color") == bodyColour) {
-      let character = e.innerText;
-      if (charStyle.getPropertyValue("transform").match(/\(-/)) {
-        if (rotationDict[e.innerText]) {
-          character = rotationDict[e.innerText];
-        }
-      }
-      chars.push([character, charBox.left]);
-    }
-  });
-  if (chars.length == 3) {
-    chars.sort((a, b) => (a[1] > b[1]) ? 1 : -1);
-    document.querySelectorAll(".captcha_text").forEach(e => {
-      e.value = `${chars[0][0]}${chars[1][0]}${chars[2][0]}`;
-    });
-  } else {
-    console.log(`Failed to solve captcha, got ${chars.length} characters instead of 3.`);
-    captcha.parentElement.click();
-  }
 }
  
 if (passwordBox = document.querySelector("form[name=post] input[name=password]")) {
